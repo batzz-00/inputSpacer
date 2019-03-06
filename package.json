@@ -13,6 +13,10 @@
   },
   "author": "Batzz",
   "license": "MIT",
+  "repository": {
+    "type" : "git",
+    "url" : "git@github.com:batzz-00/inputSpacer.git"
+  },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.3.4",
