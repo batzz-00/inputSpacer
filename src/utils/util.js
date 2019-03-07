@@ -12,11 +12,11 @@ const dateFormats = {
   s: { size: 2, max: 60, min: 0 },
   ampm: { options: ['AM', 'PM'] }
 }
-
+const isArray = (array) => Array.isArray(array)
 const properRegex = (reg) => new RegExp(reg.replace(reg, '\\$&'), 'g')
 
 
-export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) =>  {
+export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) => {
   let blocks = blockSize.constructor === Array ? blockSize : [blockSize]
   let delimiters = delimiter.constructor === Array ? delimiter : [delimiter]
 
@@ -33,15 +33,23 @@ export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) =>  {
   }, '')
 }
 
-export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delimiterSize ) => {
-  let curBlockSize = (blockSize.constructor === Array ? blockSize.filter((b, i) => blockSize.slice(0, i + 1).reduce((p, n) => p + n + delimiterSize, 0) >= val.length) : blockSize)
-  delimiter = delimiter.constructor === Array ? delimiter[blockSize.length - curBlockSize.length] || delimiter[delimiter.length - 1] : delimiter
-  delimiter = delimiter.constructor === Array ? delimiter : [delimiter]
+export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delimiterSize) => {
+  let valLength = val.length
+  let curBlockSize = (isArray(blockSize) ? blockSize.filter((b, i) => blockSize.slice(0, i).reduce((p, n) => p + n + delimiterSize, 0) >= val.length) : blockSize)
+  console.log(blockSize.slice(0, 1).reduce((p, n) => p + n + delimiterSize, 0))
+  console.log(val.length - 8)
+  delimiter = isArray(delimiter) ? delimiter[blockSize.length - curBlockSize.length] || delimiter[delimiter.length - 1] : delimiter
+  delimiter = isArray(delimiter) ? delimiter : [delimiter]
+
   lastKey = lastKey.toLowerCase()
+
   let directionInformation = cursorMoves[lastKey] ? cursorMoves[lastKey] : cursorMoves.default
   let removeStart = startSelect + directionInformation.dir
   let arr = val.split('')
+  console.log(delimiter)
+  console.log(delimiter.includes(arr[removeStart]))
   while (delimiter.includes(arr[removeStart])) { removeStart += directionInformation.dir }
+
   arr.splice(removeStart, 1)
   return arr.join('')
 }
@@ -82,9 +90,9 @@ export const filterString = (val, blockSize, blockFormatting) => {
   let count = 0
   let final = ''
   if (blockFormatting.length === 0) {
-    return valid
+    return val
   }
-  for (let i = 0; i <=val.length - 1;) {
+  for (let i = 0; i <= val.length - 1;) {
     let format = blockFormatting.constructor === Array ? blockFormatting[count] || null : blockFormatting
     blockSize = immutableBSize.constructor === Array ? immutableBSize[count] || immutableBSize[immutableBSize.length - 1] : blockSize
     if (!format) {
@@ -179,12 +187,12 @@ export const turnIntoString = (val) => {
   return val
 }
 
-export const removeAffixes = (val, suffix, prefix ) =>  {
-    if (suffix) {
-      val = val.replace(suffix, '')
-    }
-    if (prefix) {
-      val = val.substr(prefix.length, val.length)
-    }
-    return val
+export const removeAffixes = (val, suffix, prefix) => {
+  if (suffix) {
+    val = val.replace(suffix, '')
   }
+  if (prefix) {
+    val = val.substr(prefix.length, val.length)
+  }
+  return val
+}

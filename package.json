@@ -14,8 +14,8 @@
   "author": "Batzz",
   "license": "MIT",
   "repository": {
-    "type" : "git",
-    "url" : "git@github.com:batzz-00/inputSpacer.git"
+    "type": "git",
+    "url": "git@github.com:batzz-00/inputSpacer.git"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -35,11 +35,14 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "husky": "^1.3.1",
+    "jest": "^24.1.0",
     "webpack": "^4.29.6",
-    "webpack-cli": "^3.2.3",
-    "jest": "^24.1.0"
+    "webpack-cli": "^3.2.3"
   },
-  "files": ["src/index.js", "index.js"],
+  "files": [
+    "src/index.js",
+    "index.js"
+  ],
   "eslintConfig": {
     "extends": [
       "standard"
@@ -51,9 +54,11 @@
       "Image": true
     }
   },
-  "babel" : {
+  "babel": {
     "presets": [
-        ["@babel/preset-env"]
+      [
+        "@babel/preset-env"
+      ]
     ]
   },
   "husky": {

@@ -1,14 +1,25 @@
-import { removeDelimiters, fixString, checkDeletingDelimiter, checkArrowKeys, setAffixes, turnIntoString, removeAffixes, filterString, blockFormatting, setMaxLength, splitIntoBlocks} from './utils/util'
+import { removeDelimiters, fixString, checkDeletingDelimiter, checkArrowKeys, setAffixes, turnIntoString, removeAffixes, filterString, blockFormatting, setMaxLength, splitIntoBlocks } from './utils/util'
 
+const keys = {
+  deleter: [
+    {code: 8, name: 'backspace'},
+    {code: 46, name: 'delete'}
+  ]
+}
+
+const getKey = (c) => Object.keys(keys).map(keyType => keys[keyType].filter((key, i) =>{if(c === key.code){return keys[keyType][i] }}))[0][0] || null
 
 
 export default class inputSpacer {
   constructor (element, options = {}) {
     this.setOptions(options)
-    this.spaceInput = this.spaceInput.bind(this)
+    this.onInputHandler = this.onInputHandler.bind(this)
+    this.onKeyUpHandler = this.onKeyUpHandler.bind(this)
+    this.onPasteHandler = this.onPasteHandler.bind(this)
     this.val = ''
     this.displayValue = ''
     this.element = this.setupElement(element)
+    this.keys = []
     this.setup()
   }
   setOptions (options) {
@@ -24,20 +35,27 @@ export default class inputSpacer {
     }
   }
   setupElement (element) {
-    element.addEventListener('input', (e) => this.spaceInput(e))
+    element.addEventListener('input', (e) => this.onInputHandler(e))
     element.addEventListener('keydown', (e) => this.onKeyDownHandler(e))
+    element.addEventListener('keyup', (e) => this.onKeyUpHandler(e))
+    element.addEventListener('paste', (e) => this.onPasteHandler(e))
     return element
   }
   setup () {
-    const {suffix, prefix, maxLength} = this.options
+    const { suffix, prefix, maxLength } = this.options
     this.val = setAffixes(this.val, suffix, prefix, maxLength)
-    this.val = turnIntoString(this.val) 
+    this.val = turnIntoString(this.val)
     this.displayValue = this.val
     this.element.value = this.val
   }
-  spaceInput (e) {
-    const {delimiter, blockSize, delimiterSize, maxLength, suffix, prefix, blockFormatting} = this.options
-    const {startSelect, lastKey, element} = this
+  onPasteHandler (e) {
+    this.pasting = true
+  }
+  onInputHandler (e) {
+    console.log(this.pasting + "- at input")
+    const { delimiter, blockSize, delimiterSize, maxLength, suffix, prefix, blockFormatting } = this.options
+    const { startSelect, lastKey, element } = this
+
     if (checkDeletingDelimiter(this.val, delimiter, element) === true) {
       this.setString(fixString(this.val, startSelect, lastKey, delimiter, blockSize, delimiterSize))
     } else {
@@ -48,19 +66,26 @@ export default class inputSpacer {
     this.val = removeDelimiters(this.val, delimiter, blockSize, delimiterSize)
     this.val = filterString(this.val, blockSize, blockFormatting)
     this.val = setMaxLength(this.val, maxLength)
-    this.val = splitIntoBlocks(this.val, blockSize, delimiterSize, delimiter, maxLength) 
+    this.val = splitIntoBlocks(this.val, blockSize, delimiterSize, delimiter, maxLength)
     this.val = setAffixes(this.val, suffix, prefix, maxLength)
     this.val = turnIntoString(this.val)
-    
+
     this.element.value = this.val
   }
   onKeyDownHandler (e) {
     this.lastKey = e.key
+    this.keys.includes(e.keyCode) ? this.keys : this.keys.push(e.keyCode)
+
     this.startSelect = e.target.selectionStart
     this.endSelect = e.target.selectionEnd
     const { lastKey, startSelect, element, val } = this
     const { delimiter } = this.options
     checkArrowKeys(lastKey, startSelect, element, val, delimiter)
+  }
+  onKeyUpHandler (e) {
+    this.pasting = false
+    console.log(this.pasting)
+    this.keys.splice(this.keys.indexOf(e.keyCode), 1)
   }
   setString (input) {
     this.oldVal = this.val
