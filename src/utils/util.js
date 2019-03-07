@@ -13,6 +13,8 @@ const dateFormats = {
   ampm: { options: ['AM', 'PM'] }
 }
 
+const properRegex = (reg) => new RegExp(reg.replace(reg, '\\$&'), 'g')
+
 
 export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) =>  {
   let blocks = blockSize.constructor === Array ? blockSize : [blockSize]
@@ -21,12 +23,12 @@ export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) =>  {
   let getDelim = (i) => delimiters[i] || delimiters[delimiters.length - 1]
   let getBlockSize = (i) => blocks[i] || blocks[blocks.length - 1]
 
-  let c = 0
+  let count = 0
   return val.split('').reduce((acc, n, idx) => {
-    let actualIdx = idx - 1
-    c = idx === getBlockSize(c) ? c + 1 : c
-    let blockSize = (getBlockSize(c) + delimiterSize)
-    let reg = new RegExp(getDelim(Math.floor((actualIdx / blockSize))).replace(getDelim(Math.floor(actualIdx / blockSize)), '\\$&'), 'g')
+    idx--
+    count = idx === getBlockSize(count) ? count + 1 : count
+    let blockSize = (getBlockSize(count) + delimiterSize)
+    let reg = properRegex(getDelim(Math.floor((idx / blockSize))))
     return acc + n.replace(reg, '')
   }, '')
 }
@@ -39,10 +41,8 @@ export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delim
   let directionInformation = cursorMoves[lastKey] ? cursorMoves[lastKey] : cursorMoves.default
   let removeStart = startSelect + directionInformation.dir
   let arr = val.split('')
-  console.log(arr)
   while (delimiter.includes(arr[removeStart])) { removeStart += directionInformation.dir }
   arr.splice(removeStart, 1)
-  console.log(arr)
   return arr.join('')
 }
 
@@ -55,10 +55,10 @@ export const checkInputIsDelimiter = (val, blockSize, delimiterSize, delimiter, 
     return false
   }
 }
-export const checkDeletingDelimiter = (val, delimiter, startSelect, lastKey) => {
+export const checkDeletingDelimiter = (val, delimiter, element, lastKey) => {
   // if(lastKey !== "Backspace"){return false}
   delimiter = delimiter.constructor === Array ? delimiter : [delimiter]
-  if (delimiter.includes(val[element.startSelect])) {
+  if (delimiter.includes(val[element.selectionStart])) {
     return true
   }
 }
@@ -98,7 +98,7 @@ export const filterString = (val, blockSize, blockFormatting) => {
     count++
     i += blockSize
   }
-  return val
+  return final
 }
 
 export const setMaxLength = (val, maxLength) => {
