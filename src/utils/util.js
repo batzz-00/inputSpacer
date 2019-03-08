@@ -15,7 +15,6 @@ const dateFormats = {
 const isArray = (array) => Array.isArray(array)
 const properRegex = (reg) => new RegExp(reg.replace(reg, '\\$&'), 'g')
 
-
 export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) => {
   let blocks = blockSize.constructor === Array ? blockSize : [blockSize]
   let delimiters = delimiter.constructor === Array ? delimiter : [delimiter]
@@ -33,12 +32,13 @@ export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) => {
   }, '')
 }
 
-export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delimiterSize) => {
+export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delimiterSize, prefix, suffix) => {
   let valLength = val.length
-  let curBlockSize = (isArray(blockSize) ? blockSize.filter((b, i) => blockSize.slice(0, i).reduce((p, n) => p + n + delimiterSize, 0) >= val.length) : blockSize)
-  console.log(blockSize.slice(0, 1).reduce((p, n) => p + n + delimiterSize, 0))
-  console.log(val.length - 8)
-  delimiter = isArray(delimiter) ? delimiter[blockSize.length - curBlockSize.length] || delimiter[delimiter.length - 1] : delimiter
+  let curBlockSize = (isArray(blockSize) ? blockSize.filter((b, i) => {
+    if (blockSize.slice(0, i + 1).reduce((p, n) => p + n) <= (val.length - prefix.length - ((i + 1) * delimiterSize))) { return b }
+  }) : blockSize)
+
+  delimiter = isArray(delimiter) ? delimiter[curBlockSize.length - 1] || delimiter[delimiter.length - 1] : delimiter
   delimiter = isArray(delimiter) ? delimiter : [delimiter]
 
   lastKey = lastKey.toLowerCase()
@@ -46,11 +46,9 @@ export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delim
   let directionInformation = cursorMoves[lastKey] ? cursorMoves[lastKey] : cursorMoves.default
   let removeStart = startSelect + directionInformation.dir
   let arr = val.split('')
-  console.log(delimiter)
-  console.log(delimiter.includes(arr[removeStart]))
-  while (delimiter.includes(arr[removeStart])) { removeStart += directionInformation.dir }
 
-  arr.splice(removeStart, 1)
+  while (delimiter.includes(arr[removeStart])) { removeStart += directionInformation.dir }
+  arr.splice(removeStart, 2)
   return arr.join('')
 }
 

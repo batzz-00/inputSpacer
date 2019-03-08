@@ -2,13 +2,12 @@ import { removeDelimiters, fixString, checkDeletingDelimiter, checkArrowKeys, se
 
 const keys = {
   deleter: [
-    {code: 8, name: 'backspace'},
-    {code: 46, name: 'delete'}
+    { code: 8, name: 'backspace' },
+    { code: 46, name: 'delete' }
   ]
 }
 
-const getKey = (c) => Object.keys(keys).map(keyType => keys[keyType].filter((key, i) =>{if(c === key.code){return keys[keyType][i] }}))[0][0] || null
-
+const getKey = (c) => Object.keys(keys).map(keyType => keys[keyType].filter((key, i) => { if (c === key.code) { return keys[keyType][i] } }))[0][0] || null
 
 export default class inputSpacer {
   constructor (element, options = {}) {
@@ -35,7 +34,7 @@ export default class inputSpacer {
     }
   }
   setupElement (element) {
-    element.addEventListener('input', (e) => this.onInputHandler(e))
+    element.addEventListener('input', (e) => this.onInputHandler(e.target.value))
     element.addEventListener('keydown', (e) => this.onKeyDownHandler(e))
     element.addEventListener('keyup', (e) => this.onKeyUpHandler(e))
     element.addEventListener('paste', (e) => this.onPasteHandler(e))
@@ -51,15 +50,14 @@ export default class inputSpacer {
   onPasteHandler (e) {
     this.pasting = true
   }
-  onInputHandler (e) {
-    console.log(this.pasting + "- at input")
+  onInputHandler (val) {
     const { delimiter, blockSize, delimiterSize, maxLength, suffix, prefix, blockFormatting } = this.options
     const { startSelect, lastKey, element } = this
 
     if (checkDeletingDelimiter(this.val, delimiter, element) === true) {
-      this.setString(fixString(this.val, startSelect, lastKey, delimiter, blockSize, delimiterSize))
+      this.setString(fixString(this.val, startSelect, lastKey, delimiter, blockSize, delimiterSize, prefix, suffix))
     } else {
-      this.setString(e.target.value)
+      this.setString(val)
     }
 
     this.val = removeAffixes(this.val, suffix, prefix)
@@ -69,23 +67,28 @@ export default class inputSpacer {
     this.val = splitIntoBlocks(this.val, blockSize, delimiterSize, delimiter, maxLength)
     this.val = setAffixes(this.val, suffix, prefix, maxLength)
     this.val = turnIntoString(this.val)
-
     this.element.value = this.val
   }
   onKeyDownHandler (e) {
+    // set event stuff
     this.lastKey = e.key
-    this.keys.includes(e.keyCode) ? this.keys : this.keys.push(e.keyCode)
-
     this.startSelect = e.target.selectionStart
     this.endSelect = e.target.selectionEnd
+
+    // set keys down
+    this.keys.includes(e.keyCode) ? this.keys : this.keys.push(e.keyCode)
+
+    // get variables for arrowkeys func
     const { lastKey, startSelect, element, val } = this
     const { delimiter } = this.options
-    checkArrowKeys(lastKey, startSelect, element, val, delimiter)
+    // checkArrowKeys(lastKey, startSelect, element, val, delimiter)
+
+    // handle input
   }
   onKeyUpHandler (e) {
     this.pasting = false
-    console.log(this.pasting)
     this.keys.splice(this.keys.indexOf(e.keyCode), 1)
+    // this.onInputHandler(e.target.value)
   }
   setString (input) {
     this.oldVal = this.val
