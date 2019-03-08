@@ -52,8 +52,12 @@
       "localStorage": true,
       "FileReader": true,
       "Image": true
+    },
+    "env": {
+      "jest": true
     }
   },
+  
   "babel": {
     "presets": [
       [

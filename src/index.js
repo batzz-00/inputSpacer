@@ -1,13 +1,13 @@
-import { removeDelimiters, fixString, checkDeletingDelimiter, checkArrowKeys, setAffixes, turnIntoString, removeAffixes, filterString, blockFormatting, setMaxLength, splitIntoBlocks } from './utils/util'
+import { removeDelimiters, fixString, checkDeletingDelimiter, checkArrowKeys, setAffixes, turnIntoString, removeAffixes, filterString, setMaxLength, splitIntoBlocks } from './utils/util'
 
-const keys = {
-  deleter: [
-    { code: 8, name: 'backspace' },
-    { code: 46, name: 'delete' }
-  ]
-}
+// const keys = {
+//   deleter: [
+//     { code: 8, name: 'backspace' },
+//     { code: 46, name: 'delete' }
+//   ]
+// }
 
-const getKey = (c) => Object.keys(keys).map(keyType => keys[keyType].filter((key, i) => { if (c === key.code) { return keys[keyType][i] } }))[0][0] || null
+// const getKey = (c) => Object.keys(keys).map(keyType => keys[keyType].filter((key, i) => { if (c === key.code) { return keys[keyType][i] } }))[0][0] || null
 
 export default class inputSpacer {
   constructor (element, options = {}) {
@@ -59,6 +59,7 @@ export default class inputSpacer {
     } else {
       this.setString(val)
     }
+    console.log(this.val)
 
     this.val = removeAffixes(this.val, suffix, prefix)
     this.val = removeDelimiters(this.val, delimiter, blockSize, delimiterSize)
@@ -67,6 +68,7 @@ export default class inputSpacer {
     this.val = splitIntoBlocks(this.val, blockSize, delimiterSize, delimiter, maxLength)
     this.val = setAffixes(this.val, suffix, prefix, maxLength)
     this.val = turnIntoString(this.val)
+    console.log(this.val)
     this.element.value = this.val
   }
   onKeyDownHandler (e) {
@@ -76,12 +78,12 @@ export default class inputSpacer {
     this.endSelect = e.target.selectionEnd
 
     // set keys down
-    this.keys.includes(e.keyCode) ? this.keys : this.keys.push(e.keyCode)
+    if (!this.keys.includes(e.keyCode)) { this.keys.push(e.keyCode) }
 
     // get variables for arrowkeys func
     const { lastKey, startSelect, element, val } = this
     const { delimiter } = this.options
-    // checkArrowKeys(lastKey, startSelect, element, val, delimiter)
+    checkArrowKeys(lastKey, startSelect, element, val, delimiter)
 
     // handle input
   }
@@ -95,29 +97,29 @@ export default class inputSpacer {
     this.val = input
     return this
   }
-  setCursorPosition () {
-    const { lastKey, startSelect } = this
-    let { delimiter, delimiterSize, blockSize, prefix } = this.options
-    const { element } = this
-    let cursorBuffer = (cursorMoves[lastKey.toLowerCase()] || cursorMoves['default'])
-    let extraBuffer = 0
-    let curBlockSize = (blockSize.constructor === Array ? blockSize.filter((b, i) => blockSize.slice(0, i + 1).reduce((p, n) => p + n + delimiterSize, 0) <= this.val.length)
-      : new Array(Math.floor(this.val.length / (blockSize + delimiterSize))))
-    extraBuffer = prefix ? prefix.length : extraBuffer
-    delimiter = delimiter.constructor === Array ? delimiter[curBlockSize.length - 1] || delimiter[delimiter.length - 1] : delimiter
-    if (this.val[startSelect + cursorBuffer.buffer] === delimiter) {
-      let curIdx = startSelect + cursorBuffer.buffer
-      while (true) {
-        if (this.val[curIdx] !== delimiter || extraBuffer === delimiterSize) {
-          break
-        } else {
-          curIdx += cursorBuffer.dir
-          extraBuffer += cursorBuffer.dir
-        }
-      }
-      // extraBuffer = cursorBuffer.stopAtDelim ? extraBuffer : extraBuffer + cursorBuffer.dir
-    }
-    if (this.pushCursor) { extraBuffer += this.pushCursor; this.pushCursor = null }
-    element.setSelectionRange(startSelect + cursorBuffer.buffer + extraBuffer, startSelect + cursorBuffer.buffer + extraBuffer)
-  }
+  // setCursorPosition () {
+  //   const { lastKey, startSelect } = this
+  //   let { delimiter, delimiterSize, blockSize, prefix } = this.options
+  //   const { element } = this
+  //   let cursorBuffer = (cursorMoves[lastKey.toLowerCase()] || cursorMoves['default'])
+  //   let extraBuffer = 0
+  //   let curBlockSize = (blockSize.constructor === Array ? blockSize.filter((b, i) => blockSize.slice(0, i + 1).reduce((p, n) => p + n + delimiterSize, 0) <= this.val.length)
+  //     : new Array(Math.floor(this.val.length / (blockSize + delimiterSize))))
+  //   extraBuffer = prefix ? prefix.length : extraBuffer
+  //   delimiter = delimiter.constructor === Array ? delimiter[curBlockSize.length - 1] || delimiter[delimiter.length - 1] : delimiter
+  //   if (this.val[startSelect + cursorBuffer.buffer] === delimiter) {
+  //     let curIdx = startSelect + cursorBuffer.buffer
+  //     while (true) {
+  //       if (this.val[curIdx] !== delimiter || extraBuffer === delimiterSize) {
+  //         break
+  //       } else {
+  //         curIdx += cursorBuffer.dir
+  //         extraBuffer += cursorBuffer.dir
+  //       }
+  //     }
+  //     // extraBuffer = cursorBuffer.stopAtDelim ? extraBuffer : extraBuffer + cursorBuffer.dir
+  //   }
+  //   if (this.pushCursor) { extraBuffer += this.pushCursor; this.pushCursor = null }
+  //   element.setSelectionRange(startSelect + cursorBuffer.buffer + extraBuffer, startSelect + cursorBuffer.buffer + extraBuffer)
+  // }
 }
