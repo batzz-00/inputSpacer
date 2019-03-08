@@ -195,3 +195,26 @@ export const removeAffixes = (val, suffix, prefix) => {
   }
   return val
 }
+
+export const setCursorPosition = (val, lastKey, startSelect, delimiter, delimiterSize, blockSize, prefix, element) => {
+  let cursorBuffer = (cursorMoves[lastKey.toLowerCase()] || cursorMoves['default'])
+  let extraBuffer = 0
+  let curBlockSize = (blockSize.constructor === Array ? blockSize.filter((b, i) => blockSize.slice(0, i + 1).reduce((p, n) => p + n + delimiterSize, 0) <= val.length)
+    : new Array(Math.floor(val.length / (blockSize + delimiterSize))))
+  extraBuffer = prefix ? prefix.length : extraBuffer
+  delimiter = delimiter.constructor === Array ? delimiter[curBlockSize.length - 1] || delimiter[delimiter.length - 1] : delimiter
+  if (val[startSelect + cursorBuffer.buffer] === delimiter) {
+    let curIdx = startSelect + cursorBuffer.buffer
+    while (true) {
+      if (val[curIdx] !== delimiter || extraBuffer === delimiterSize) {
+        break
+      } else {
+        curIdx += cursorBuffer.dir
+        extraBuffer += cursorBuffer.dir
+      }
+    }
+    extraBuffer = cursorBuffer.stopAtDelim ? extraBuffer : extraBuffer + cursorBuffer.dir
+  }
+  // if (this.pushCursor) { extraBuffer += this.pushCursor; this.pushCursor = null }
+  element.setSelectionRange(startSelect + cursorBuffer.buffer + extraBuffer, startSelect + cursorBuffer.buffer + extraBuffer)
+}
