@@ -168,8 +168,51 @@ export const blockFormatter = (blockType, blockText, allBlocks) => {
         }
       }
       return blockText
+    case 'd':
+      let leap = false
+      let daysInMonth = 0
+      let monthInput = allBlocks.filter(b => b.format === 'm')
+      let yearInput = allBlocks.filter(b => b.format === 'yyyy')
+      if (yearInput[0]) {
+        if (yearInput[0].text.length === 4) {
+          if (yearInput.text % 4 === 0) {
+            leap = true
+          }
+        }
+      }
+      if (monthInput[0]) {
+        let month = monthInput[0].text.join('')
+        if (!isNaN(parseInt(month)) && month.toString().length === 2) {
+          daysInMonth = leap && month === '2' ? months[month] + 1 : months[month]
+        }
+      }
+      format = dateFormats[blockType]
+      if (blockText.length === 1) {
+        if (parseInt(blockText[0]) > parseInt(String(format.max)[0])) {
+          // this.startSelect++ fix this implement somehow
+          return '0' + blockText
+        } else if (parseInt(blockText[0]) < format.min) {
+          return format.min
+        } else {
+          return blockText
+        }
+      } else {
+        if (parseInt(blockText) > format.max) {
+          return format.max
+        } else if (parseInt(blockText) > format.min) {
+          return blockText
+        }
+      }
+      return blockText
     case 'm':
-      // console.log(yearInput)
+      // let yearInput = allBlocks.filter(b => b.format === "yyyy")
+      // if(yearInput[0]){
+      //   if(yearInput[0].text.length === 4){
+
+      //   }
+      // }
+      return blockText
+    case 'yyyy':
       return blockText
   }
 }

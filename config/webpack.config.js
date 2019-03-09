@@ -1,12 +1,12 @@
 const path = require('path')
 module.exports = {
-  devtool: 'eval-source-map',
+  devtool: 'source-map',
   entry: './src/index',
   output: {
     library: 'inputSpacer',
     libraryExport: 'default',
     filename: 'main.js',
-    path: path.resolve(__dirname, '../dist/dev')
+    path: path.resolve(__dirname, '../dist/prod')
   },
 
   module: {
