@@ -35,6 +35,7 @@ export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) => {
 export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delimiterSize, prefix, suffix) => {
   prefix = prefix || ''
   suffix = suffix || ''
+
   let curBlockSize = (isArray(blockSize) ? blockSize.filter((b, i) => {
     if (blockSize.slice(0, i + 1).reduce((p, n) => p + n) <= (val.length - prefix.length - ((i + 1) * delimiterSize))) { return b }
   }) : blockSize)
@@ -49,7 +50,7 @@ export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delim
   let arr = val.split('')
 
   while (delimiter.includes(arr[removeStart])) { removeStart += directionInformation.dir }
-  arr.splice(removeStart, 2)
+  arr.splice(removeStart, 1)
   return arr.join('')
 }
 
