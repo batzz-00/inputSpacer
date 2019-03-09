@@ -71,13 +71,12 @@ export default class inputSpacer {
     } else {
       this.setString(val)
     }
-    console.log(this.val)
 
     this.val = removeAffixes(this.val, suffix, prefix)
     this.val = removeDelimiters(this.val, delimiter, blockSize, delimiterSize)
-    this.val = filterString(this.val, blockSize, blockFormatting)
     this.val = setMaxLength(this.val, maxLength)
-    this.val = splitIntoBlocks(this.val, blockSize, delimiterSize, delimiter, maxLength)
+    this.val = splitIntoBlocks(this.val, blockSize, delimiterSize, delimiter, maxLength, blockFormatting)
+    this.val = filterString(this.val, blockSize, blockFormatting)
     this.val = setAffixes(this.val, suffix, prefix, maxLength)
     this.val = turnIntoString(this.val)
     this.element.value = this.val

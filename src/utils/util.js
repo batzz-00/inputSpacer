@@ -6,12 +6,18 @@ const cursorMoves = {
   default: { buffer: 1, dir: 1, stopAtDelim: false }
 }
 const dateFormats = {
-  m: { size: 2, max: 60, min: 0 }, // minute
+  M: { size: 2, max: 60, min: 0 }, // minute
   H: { size: 2, max: 24, min: 0 }, // 24 hour
   h: { size: 2, max: 12, min: 0 }, // 12 hour
   s: { size: 2, max: 60, min: 0 },
+  d: { size: 2, max: 12, min: 0 }, // day
+  m: { size: 2, max: 12, min: 0 }, // month
+  y: { size: 2, max: 60, min: 0 }, // year
   ampm: { options: ['AM', 'PM'] }
 }
+
+let months = { '1': 31, '2': 28, '3': 31, '4': 30, '5': 31, '6': 30, '7': 31, '8': 31, '9': 30, '10': 31, '11': 30, '12': 31 } // leap years for feb
+
 const isArray = (array) => Array.isArray(array)
 const properRegex = (reg) => new RegExp(reg.replace(reg, '\\$&'), 'g')
 
@@ -86,25 +92,22 @@ export const checkArrowKeys = (lastKey, startSelect, element, val, delimiter) =>
 }
 
 export const filterString = (val, blockSize, blockFormatting) => {
-  const immutableBSize = blockSize
   let count = 0
-  let final = ''
+  let final = []
   if (blockFormatting.length === 0) {
     return val
   }
-  for (let i = 0; i <= val.length - 1;) {
-    let format = blockFormatting.constructor === Array ? blockFormatting[count] || null : blockFormatting
-    blockSize = immutableBSize.constructor === Array ? immutableBSize[count] || immutableBSize[immutableBSize.length - 1] : blockSize
+  for (let i = 0; i <= val.length - 1; i++) {
+    let format = isArray(blockFormatting) ? blockFormatting[i] || null : blockFormatting
+
+    // let curBlockSize = isArray(blockSize) ? blockSize[i] || blockSize[blockSize.length - 1] : blockSize
     if (!format) {
-      final += val.substring(i, i + blockSize)
-      count++
-      i += blockSize
+      final.push(val[i])
       continue
     }
-    let valid = blockFormatter(format, val.substring(i, i + blockSize))
-    final += valid
-    count++
-    i += blockSize
+    let text = val[i]
+    text.text = blockFormatter(format, val[i].text.join(''), val).split('')
+    final.push(text)
   }
   return final
 }
@@ -116,7 +119,7 @@ export const setMaxLength = (val, maxLength) => {
   return val
 }
 
-export const splitIntoBlocks = (val, blockSize, delimiterSize, delimiter, maxLength) => {
+export const splitIntoBlocks = (val, blockSize, delimiterSize, delimiter, maxLength, blockFormatting) => {
   const immutableBSize = blockSize
   let it = 0 // Current index of which the blockOutput is being pushed to (incremented by wto because a space array is added)
   let blockedOutput = []
@@ -133,17 +136,19 @@ export const splitIntoBlocks = (val, blockSize, delimiterSize, delimiter, maxLen
       count++
       it += 2
     }
+
     if (!blockedOutput[it]) { blockedOutput[it] = { text: [], type: 'text' } }
+    if (blockFormatting[count]) { blockedOutput[it]['format'] = blockFormatting[count] }
     blockedOutput[it].text.push(val.substring(i, i + 1))
   }
   return blockedOutput
 }
-export const blockFormatter = (blockType, blockText) => {
+export const blockFormatter = (blockType, blockText, allBlocks) => {
   switch (blockType) {
     case 'num':
       return blockText.split('').filter(b => !isNaN(parseInt(b))).join('')
     case 'h':
-    case 'm':
+    case 'M':
       let format = dateFormats[blockType]
       blockText = blockText.split('').reduce((p, n) => p + (isNaN(parseInt(n)) ? '' : n), '') // remove all non number characters
       if (blockText.length === 1) {
@@ -162,6 +167,9 @@ export const blockFormatter = (blockType, blockText) => {
           return blockText
         }
       }
+      return blockText
+    case 'm':
+      // console.log(yearInput)
       return blockText
   }
 }
