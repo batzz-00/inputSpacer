@@ -45,6 +45,7 @@ export default class inputSpacer {
     }
   }
   setupElement (element) {
+    if (!element) { throw new Error('[input-spacer] : No input supplied!') }
     element.addEventListener('input', (e) => this.onInputHandler(e.target.value))
     element.addEventListener('keydown', (e) => this.onKeyDownHandler(e))
     element.addEventListener('keyup', (e) => this.onKeyUpHandler(e))
