@@ -64,8 +64,8 @@ export default class inputSpacer {
   }
   onInputHandler (val) {
     const { delimiter, blockSize, delimiterSize, maxLength, suffix, prefix, blockFormatting } = this.options
-    const { startSelect, lastKey, element } = this
-
+    const { startSelect, endSelect, lastKey, element } = this
+    this.oldVal = this.val
     if (checkDeletingDelimiter(this.val, delimiter, element) === true) {
       this.setString(fixString(this.val, startSelect, lastKey, delimiter, blockSize, delimiterSize, prefix, suffix))
     } else {
@@ -80,7 +80,7 @@ export default class inputSpacer {
     this.val = setAffixes(this.val, suffix, prefix, maxLength)
     this.val = turnIntoString(this.val)
     this.element.value = this.val
-    setCursorPosition(this.val, lastKey, startSelect, delimiter, delimiterSize, blockSize, prefix, element)
+    setCursorPosition(this.val, lastKey, startSelect, endSelect, delimiter, delimiterSize, blockSize, prefix, element)
   }
   onKeyDownHandler (e) {
     // set event stuff

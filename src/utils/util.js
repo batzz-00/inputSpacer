@@ -18,6 +18,25 @@ const dateFormats = {
 
 let months = { '1': 31, '2': 28, '3': 31, '4': 30, '5': 31, '6': 30, '7': 31, '8': 31, '9': 30, '10': 31, '11': 30, '12': 31 } // leap years for feb
 
+const formatMinMax = (text, min, max) => {
+  if (text.length === 1) {
+    if (parseInt(text[0]) > parseInt(String(max)[0])) {
+      // this.startSelect++ fix this implement somehow
+      return '0' + text
+    } else if (parseInt(text[0]) < min) {
+      return min
+    } else {
+      return text
+    }
+  } else {
+    if (parseInt(text) > max) {
+      return max
+    } else if (parseInt(text) > min) {
+      return text
+    }
+  }
+}
+
 const isArray = (array) => Array.isArray(array)
 const properRegex = (reg) => new RegExp(reg.replace(reg, '\\$&'), 'g')
 
@@ -42,11 +61,16 @@ export const fixString = (val, startSelect, lastKey, delimiter, blockSize, delim
   prefix = prefix || ''
   suffix = suffix || ''
 
-  let curBlockSize = (isArray(blockSize) ? blockSize.filter((b, i) => {
-    if (blockSize.slice(0, i + 1).reduce((p, n) => p + n) <= (val.length - prefix.length - ((i + 1) * delimiterSize))) { return b }
-  }) : blockSize)
+  let curBlockIdx
+  if (isArray(blockSize)) {
+    curBlockIdx = blockSize.filter((b, i) => {
+      if (blockSize.slice(0, i + 1).reduce((p, n) => p + n) <= (val.length - prefix.length - ((i + 1) * delimiterSize))) { return b }
+    }).length
+  } else {
+    curBlockIdx = Math.floor(val.length / (blockSize + delimiterSize))
+  }
 
-  delimiter = isArray(delimiter) ? delimiter[curBlockSize.length - 1] || delimiter[delimiter.length - 1] : delimiter
+  delimiter = isArray(delimiter) ? delimiter[curBlockIdx - 1] || delimiter[delimiter.length - 1] : delimiter
   delimiter = isArray(delimiter) ? delimiter : [delimiter]
 
   lastKey = lastKey.toLowerCase()
@@ -71,6 +95,7 @@ export const checkInputIsDelimiter = (val, blockSize, delimiterSize, delimiter, 
 }
 export const checkDeletingDelimiter = (val, delimiter, element, lastKey) => {
   // if(lastKey !== "Backspace"){return false}
+  console.log('lel')
   delimiter = delimiter.constructor === Array ? delimiter : [delimiter]
   if (delimiter.includes(val[element.selectionStart])) {
     return true
@@ -92,7 +117,6 @@ export const checkArrowKeys = (lastKey, startSelect, element, val, delimiter) =>
 }
 
 export const filterString = (val, blockSize, blockFormatting) => {
-  let count = 0
   let final = []
   if (blockFormatting.length === 0) {
     return val
@@ -149,6 +173,7 @@ export const blockFormatter = (blockType, blockText, allBlocks) => {
       return blockText.split('').filter(b => !isNaN(parseInt(b))).join('')
     case 'h':
     case 'M':
+      console.log(blockText)
       let format = dateFormats[blockType]
       blockText = blockText.split('').reduce((p, n) => p + (isNaN(parseInt(n)) ? '' : n), '') // remove all non number characters
       if (blockText.length === 1) {
@@ -170,7 +195,7 @@ export const blockFormatter = (blockType, blockText, allBlocks) => {
       return blockText
     case 'd':
       let leap = false
-      let daysInMonth = 0
+      let daysInMonth = 30
       let monthInput = allBlocks.filter(b => b.format === 'm')
       let yearInput = allBlocks.filter(b => b.format === 'yyyy')
       if (yearInput[0]) {
@@ -186,24 +211,8 @@ export const blockFormatter = (blockType, blockText, allBlocks) => {
           daysInMonth = leap && month === '2' ? months[month] + 1 : months[month]
         }
       }
-      format = dateFormats[blockType]
-      if (blockText.length === 1) {
-        if (parseInt(blockText[0]) > parseInt(String(format.max)[0])) {
-          // this.startSelect++ fix this implement somehow
-          return '0' + blockText
-        } else if (parseInt(blockText[0]) < format.min) {
-          return format.min
-        } else {
-          return blockText
-        }
-      } else {
-        if (parseInt(blockText) > format.max) {
-          return format.max
-        } else if (parseInt(blockText) > format.min) {
-          return blockText
-        }
-      }
-      return blockText
+      console.log(String(formatMinMax(blockText, 0, daysInMonth)))
+      return String(formatMinMax(blockText, 0, daysInMonth))
     case 'm':
       // let yearInput = allBlocks.filter(b => b.format === "yyyy")
       // if(yearInput[0]){
@@ -248,7 +257,7 @@ export const removeAffixes = (val, suffix, prefix) => {
   return val
 }
 
-export const setCursorPosition = (val, lastKey, startSelect, delimiter, delimiterSize, blockSize, prefix, element) => {
+export const setCursorPosition = (val, lastKey, startSelect, endSelect, delimiter, delimiterSize, blockSize, prefix, element) => {
   let cursorBuffer = (cursorMoves[lastKey.toLowerCase()] || cursorMoves['default'])
   let extraBuffer = 0
   let curBlockSize = (blockSize.constructor === Array ? blockSize.filter((b, i) => blockSize.slice(0, i + 1).reduce((p, n) => p + n + delimiterSize, 0) <= val.length)
