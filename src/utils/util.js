@@ -48,6 +48,13 @@ export const removeDelimiters = (val, delimiter, blockSize, delimiterSize) => {
   let getBlockSize = (i) => blocks[i] || blocks[blocks.length - 1]
 
   let count = 0
+  // console.log(val.split('').reduce((acc, n, idx) => {
+  //   // idx--
+  //   count = idx === getBlockSize(count) ? count + 1 : count
+  //   let blockSize = (getBlockSize(count) + delimiterSize)
+  //   let reg = properRegex(getDelim(Math.floor((idx / blockSize))))
+  //   return acc + n.replace(reg, '')
+  // }, ''))
   return val.split('').reduce((acc, n, idx) => {
     idx--
     count = idx === getBlockSize(count) ? count + 1 : count
@@ -95,7 +102,6 @@ export const checkInputIsDelimiter = (val, blockSize, delimiterSize, delimiter, 
 }
 export const checkDeletingDelimiter = (val, delimiter, element, lastKey) => {
   // if(lastKey !== "Backspace"){return false}
-  console.log('lel')
   delimiter = delimiter.constructor === Array ? delimiter : [delimiter]
   if (delimiter.includes(val[element.selectionStart])) {
     return true
@@ -144,28 +150,46 @@ export const setMaxLength = (val, maxLength) => {
 }
 
 export const splitIntoBlocks = (val, blockSize, delimiterSize, delimiter, maxLength, blockFormatting) => {
-  const immutableBSize = blockSize
-  let it = 0 // Current index of which the blockOutput is being pushed to (incremented by wto because a space array is added)
   let blockedOutput = []
+  const immutableBSize = blockSize
   let count = 0 // Current index of block being processed from block array
   for (let i = 0; i <= val.length; i++) {
-    blockSize = immutableBSize.constructor === Array ? immutableBSize[count] || immutableBSize[immutableBSize.length - 1] : blockSize
-    let iterableSize = immutableBSize.constructor === Array ? immutableBSize.slice(0, count + 1).reduce((p, n) => p + n) : count * blockSize // Current total of blocks
-    let finalLength = immutableBSize.constructor === Array ? maxLength !== 0 ? maxLength : immutableBSize.reduce((p, n) => p + n) : maxLength
-    let actualDelimiter = delimiter.constructor === Array ? delimiter[count] || delimiter[delimiter.length - 1] : delimiter
-    if ((iterableSize - i) % (blockSize) === 0 && i !== 0 && i !== finalLength) {
-      // last check makes sure that a number below the current iterable ( in the case of a block array of [3,1,5]), is not ticked by the modulo operator at the first text
-      // has to wait for the total text length (i) to reach at least to the current total (iterableSize)
-      blockedOutput.push({ text: new Array(delimiterSize).fill(actualDelimiter), type: 'delimiter' })
+    blockSize = isArray(immutableBSize) ? immutableBSize[count] || immutableBSize[immutableBSize.length - 1] : blockSize
+    let iterableSize = isArray(immutableBSize)  ? immutableBSize.slice(0, count + 1).reduce((p, n) => p + n) : count * blockSize // Current total of blocks
+    if ((iterableSize - i) % (blockSize) == 0 && i !== 0) {
       count++
-      it += 2
     }
-
-    if (!blockedOutput[it]) { blockedOutput[it] = { text: [], type: 'text' } }
-    if (blockFormatting[count]) { blockedOutput[it]['format'] = blockFormatting[count] }
-    blockedOutput[it].text.push(val.substring(i, i + 1))
+    if (!blockedOutput[count] && val.substring(i, i+1) !== '') {
+      blockedOutput[count] = { text: [val.substring(i, i + 1)], type: 'text' }
+      if (blockFormatting[count]) { blockedOutput[count]['format'] = blockFormatting[count] }
+    } else if(val.substring(i, i+1) !== '') {
+      blockedOutput[count].text.push(val.substring(i, i + 1))
+    }
   }
   return blockedOutput
+}
+
+export const setDelimiters = (val, blockSize, delimiterSize, delimiter, maxLength, blockFormatting) => {
+  let newArray = []
+  const immutableBSize = blockSize
+  // console.log(val)
+  let length = val.length
+  for (let i = 0; i <= length; i++) {
+    blockSize = isArray(immutableBSize) ? immutableBSize[i] || immutableBSize[immutableBSize.length - 1] : blockSize
+    let finalLength = isArray(immutableBSize) ? maxLength !== 0 ? maxLength : immutableBSize.reduce((p, n) => p + n) : maxLength
+    if (val[i].type === "text" && val[i].text.length === blockSize) {
+      console.log('up')
+      let actualDelimiter = isArray(delimiter) ? delimiter[i%1] || delimiter[delimiter.length - 1] : delimiter
+      val.splice(i+1, 0, { text: new Array(delimiterSize).fill(actualDelimiter), type: 'delimiter' })
+      // console.log(val[i])
+      // console.log('delim')
+      // console.log(JSON.stringify(val))
+      // console.log(JSON.stringify(val))
+      // i++
+    }
+      console.log(val)
+  }
+  return val
 }
 export const blockFormatter = (blockType, blockText, allBlocks) => {
   switch (blockType) {
@@ -173,7 +197,6 @@ export const blockFormatter = (blockType, blockText, allBlocks) => {
       return blockText.split('').filter(b => !isNaN(parseInt(b))).join('')
     case 'h':
     case 'M':
-      console.log(blockText)
       let format = dateFormats[blockType]
       blockText = blockText.split('').reduce((p, n) => p + (isNaN(parseInt(n)) ? '' : n), '') // remove all non number characters
       if (blockText.length === 1) {

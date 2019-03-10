@@ -8,7 +8,8 @@ import { removeDelimiters,
   filterString,
   setMaxLength,
   splitIntoBlocks,
-  setCursorPosition
+  setCursorPosition,
+  setDelimiters
 } from './utils/util'
 
 // const keys = {
@@ -72,11 +73,13 @@ export default class inputSpacer {
       this.setString(val)
     }
 
+  console.clear()
     this.val = removeAffixes(this.val, suffix, prefix)
     this.val = removeDelimiters(this.val, delimiter, blockSize, delimiterSize)
     this.val = setMaxLength(this.val, maxLength)
     this.val = splitIntoBlocks(this.val, blockSize, delimiterSize, delimiter, maxLength, blockFormatting)
     this.val = filterString(this.val, blockSize, blockFormatting)
+    this.val = setDelimiters(this.val, blockSize, delimiterSize, delimiter, maxLength)
     this.val = setAffixes(this.val, suffix, prefix, maxLength)
     this.val = turnIntoString(this.val)
     this.element.value = this.val
