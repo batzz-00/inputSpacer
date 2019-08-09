@@ -178,7 +178,6 @@ export const setDelimiters = (val, blockSize, delimiterSize, delimiter, maxLengt
     blockSize = isArray(immutableBSize) ? immutableBSize[i] || immutableBSize[immutableBSize.length - 1] : blockSize
     let finalLength = isArray(immutableBSize) ? maxLength !== 0 ? maxLength : immutableBSize.reduce((p, n) => p + n) : maxLength
     if (val[i].type === "text" && val[i].text.length === blockSize) {
-      console.log('up')
       let actualDelimiter = isArray(delimiter) ? delimiter[i%1] || delimiter[delimiter.length - 1] : delimiter
       val.splice(i+1, 0, { text: new Array(delimiterSize).fill(actualDelimiter), type: 'delimiter' })
       // console.log(val[i])
