@@ -58,7 +58,6 @@
       "jest": true
     }
   },
-  
   "babel": {
     "presets": [
       [

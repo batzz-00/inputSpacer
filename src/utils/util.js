@@ -1,3 +1,5 @@
+
+
 const cursorMoves = {
   backspace: { buffer: -1, dir: -1, stopAtDelim: true },
   delete: { buffer: 0, dir: 1, stopAtDelim: true },
@@ -156,6 +158,7 @@ export const splitIntoBlocks = (val, blockSize, delimiterSize, delimiter, maxLen
   for (let i = 0; i <= val.length; i++) {
     blockSize = isArray(immutableBSize) ? immutableBSize[count] || immutableBSize[immutableBSize.length - 1] : blockSize
     let iterableSize = isArray(immutableBSize)  ? immutableBSize.slice(0, count + 1).reduce((p, n) => p + n) : count * blockSize // Current total of blocks
+
     if ((iterableSize - i) % (blockSize) == 0 && i !== 0) {
       count++
     }
@@ -174,19 +177,15 @@ export const setDelimiters = (val, blockSize, delimiterSize, delimiter, maxLengt
   const immutableBSize = blockSize
   // console.log(val)
   let length = val.length
+  val = val.slice()
   for (let i = 0; i <= length; i++) {
     blockSize = isArray(immutableBSize) ? immutableBSize[i] || immutableBSize[immutableBSize.length - 1] : blockSize
     let finalLength = isArray(immutableBSize) ? maxLength !== 0 ? maxLength : immutableBSize.reduce((p, n) => p + n) : maxLength
     if (val[i].type === "text" && val[i].text.length === blockSize) {
+      console.log('lol')
       let actualDelimiter = isArray(delimiter) ? delimiter[i%1] || delimiter[delimiter.length - 1] : delimiter
       val.splice(i+1, 0, { text: new Array(delimiterSize).fill(actualDelimiter), type: 'delimiter' })
-      // console.log(val[i])
-      // console.log('delim')
-      // console.log(JSON.stringify(val))
-      // console.log(JSON.stringify(val))
-      // i++
     }
-      console.log(val)
   }
   return val
 }
@@ -286,7 +285,10 @@ export const setCursorPosition = (val, lastKey, startSelect, endSelect, delimite
     : new Array(Math.floor(val.length / (blockSize + delimiterSize))))
   extraBuffer = prefix ? prefix.length : extraBuffer
   delimiter = delimiter.constructor === Array ? delimiter[curBlockSize.length - 1] || delimiter[delimiter.length - 1] : delimiter
-  if (val[startSelect + cursorBuffer.buffer] === delimiter) {
+  console.log(startSelect + cursorBuffer.buffer)
+  console.log(val.length)
+  // if (val[startSelect + cursorBuffer.buffer] === delimiter) {
+  if(val.length !== (startSelect + cursorBuffer.buffer)){
     let curIdx = startSelect + cursorBuffer.buffer
     while (true) {
       if (val[curIdx] !== delimiter || extraBuffer === delimiterSize) {
